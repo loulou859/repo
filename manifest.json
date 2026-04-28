@@ -1,0 +1,50 @@
+{
+  "name": "tonpseudo",
+  "version": "1.0.0",
+  "scrapers": [
+    {
+      "id": "purstream",
+      "name": "purstream-fr",
+      "description": "french",
+      "version": "1.0.2",
+      "author": "tonpseudo",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "ps.js",
+      "enabled": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "",
+      "contentLanguage": [
+        "fr"
+      ]
+    },
+    {
+      "id": "movix",
+      "name": "movix-fr",
+      "description": "french",
+      "version": "1.0.2",
+      "author": "tonpseudo",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "mvix.js",
+      "enabled": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "",
+      "contentLanguage": [
+        "fr"
+      ]
+    }
+  ]
+}
