@@ -45,6 +45,19 @@
       "contentLanguage": [
         "fr"
       ]
+    },
+    {
+      "id": "anime-sama",
+      "name": "anime-sama-fr",
+      "description": "Anime-sama.to — Anime VF/VOSTFR",
+      "version": "1.0.0",
+      "author": "loulou859",
+      "supportedTypes": ["tv"],
+      "filename": "anime-sama.js",
+      "enabled": true,
+      "formats": ["m3u8", "mp4"],
+      "logo": "https://anime-sama.to/favicon.ico",
+      "contentLanguage": ["fr"]
     }
   ]
 }
