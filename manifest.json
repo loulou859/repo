@@ -71,6 +71,19 @@
       "formats": ["mp4", "m3u8"],
       "logo": "https://i.postimg.cc/nLwY1pJB/nakios.png",
       "contentLanguage": ["fr"]
+    },
+    {
+      "id": "toflix",
+      "name": "ToFlix",
+      "description": "Films & Séries in English and French",
+      "version": "1.0.0",
+      "author": "wooodyhood",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "toflix.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://i.postimg.cc/yNxJYqkv/toflix.png",
+      "contentLanguage": ["fr"]
     }
   ]
 }
