@@ -58,6 +58,19 @@
       "formats": ["m3u8", "mp4"],
       "logo": "https://anime-sama.to/favicon.ico",
       "contentLanguage": ["fr"]
+    },
+    {
+      "id": "nakios",
+      "name": "Nakios",
+      "description": "french stream",
+      "version": "3.8.2",
+      "author": "loulou859",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "nakios.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://i.postimg.cc/nLwY1pJB/nakios.png",
+      "contentLanguage": ["fr"]
     }
   ]
 }
