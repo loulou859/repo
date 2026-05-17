@@ -1,20 +1,19 @@
 // =============================================================
 // Provider Nuvio : Movix (VF/VOSTFR français)
-// Version : 4.4.1
-// - Domaine récupéré automatiquement depuis ton domains.json (GitHub)
+// Version : 4.4.0
+// - Domaine récupéré automatiquement depuis domains.json (GitHub)
 // - Fallback sur movix.cash si la lecture échoue
 //   Triple API (purstream + cpasmal + fstream)
 //   + Darkino (Nightflix/darkibox) en bonus
 // =============================================================
 
 var TMDB_KEY = 'f3d757824f08ea2cff45eb8f47ca3a1e';
-// URL de TON fichier JSON sur GitHub (iokza)
 var DOMAINS_URL = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
-var MOVIX_FALLBACK = 'tax';
+var MOVIX_FALLBACK = 'cash';
 
 var _cachedEndpoint = null;
 
-// ─── Récupération du domaine depuis ton GitHub ───────────────────
+// ─── Récupération du domaine depuis GitHub ───────────────────
 
 function detectApi() {
   if (_cachedEndpoint) {
@@ -28,9 +27,8 @@ function detectApi() {
       return res.json();
     })
     .then(function(data) {
-      // Modifié pour lire TA clé abrégée "mvx" au lieu de "movix"
-      var tld = data.mvx; 
-      if (!tld) throw new Error('Domaine movix (mvx) absent du fichier');
+      var tld = data['mvx'];
+      if (!tld) throw new Error('Clé "mvx" absente du domains.json');
       console.log('[Movix] Domaine récupéré: movix.' + tld);
       _cachedEndpoint = {
         api:     'https://api.movix.' + tld,
