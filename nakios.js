@@ -1,16 +1,17 @@
 // =============================================================
 // Provider Nuvio : Nakios (VF / VOSTFR / MULTI)
-// Version : 4.2.1
-// - Auto-Domain Sync via GitHub JSON (IOKZA)
+// Version : 4.2.0
+// - Header: Nakios - Quality
+// - Added Movie Title + Year and Duration
+// - Domain fixed to nakios.fit (removed dead wooodyhood link)
 // =============================================================
 
 
 var TMDB_KEY        = 'f3d757824f08ea2cff45eb8f47ca3a1e';
 var NAKIOS_UA       = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-var NAKIOS_DOMAIN   = '';
+var DOMAINS_URL     = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
+var NAKIOS_DOMAIN   = 'nakios.fit'; // fallback
 
-// URL de ton fichier JSON sur GitHub
-const CONFIG_URL = "https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json";
 
 var _cachedEndpoint = null;
 
@@ -67,26 +68,24 @@ function buildEndpoint(domain) {
 }
 
 
-// Mis à jour pour attendre la réponse de ton GitHub JSON de manière synchrone pour Nuvio
 function detectEndpoint() {
   if (_cachedEndpoint) return Promise.resolve(_cachedEndpoint);
-
-  return fetch(CONFIG_URL)
+  return fetch(DOMAINS_URL)
     .then(function(res) {
-      if (!res.ok) throw new Error("Erreur lors du chargement du JSON");
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     })
-    .then(function(config) {
-      // On reconstruit dynamiquement le domaine avec le code de ton JSON (ex: nks -> ink)
-      NAKIOS_DOMAIN = 'nakios.' + config.nks;
+    .then(function(data) {
+      var tld = data['nks'];
+      if (!tld) throw new Error('Clé "nks" absente du domains.json');
+      NAKIOS_DOMAIN = 'nakios.' + tld;
+      console.log('[Nakios] Domaine récupéré :', NAKIOS_DOMAIN);
       _cachedEndpoint = buildEndpoint(NAKIOS_DOMAIN);
       return _cachedEndpoint;
     })
     .catch(function(err) {
-      console.error("[Nakios] Utilisation du domaine de secours :", err);
-      // Fallback de sécurité si ton GitHub rencontre un problème réseau
-      NAKIOS_DOMAIN = 'nakios.fit'; 
-      _cachedEndpoint = buildEndpoint(NAKIOS_DOMAIN);
+      console.warn('[Nakios] domains.json échoué :', err.message, '— fallback nakios.fit');
+      _cachedEndpoint = buildEndpoint('nakios.fit');
       return _cachedEndpoint;
     });
 }
@@ -196,11 +195,11 @@ function getStreams(tmdbId, mediaType, season, episode) {
   return Promise.all([
     getTmdbMetadata(tmdbId, mediaType),
     mediaType === 'tv' ? getEpisodeInfo(tmdbId, season, episode) : Promise.resolve(null),
-    detectEndpoint() // Cette ligne bloque l'exécution jusqu'à ce que le domaine soit récupéré
+    detectEndpoint()
   ]).then(function(results) {
     var meta     = results[0];
     var epInfo   = results[1];
-    var endpoint = results[2]; // Contient l'endpoint mis à jour depuis le JSON (ex: base, api, referer)
+    var endpoint = results[2];
 
     var url = mediaType === 'tv'
       ? endpoint.api + '/sources/tv/' + tmdbId + '/' + (season || 1) + '/' + (episode || 1)
