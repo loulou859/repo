@@ -1,10 +1,11 @@
 // =============================================================
 // Provider Nuvio : ToFlix (VF français)
-// Version : 2.0.0
-// - Domain fixed to toflix.fit (removed dead wooodyhood link)
+// Version : 2.1.0
+// - Domaine récupéré automatiquement depuis domains.json GitHub (iokza/NoAds4Website, clé "tf")
 // =============================================================
 
-var TOFLIX_DOMAIN  = 'toflix.fit';
+var DOMAINS_URL    = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
+var TOFLIX_DOMAIN  = 'toflix.fit'; // fallback
 var TOFLIX_API     = 'https://api.' + TOFLIX_DOMAIN + '/toflix_api.php';
 var TOFLIX_REFERER = 'https://' + TOFLIX_DOMAIN + '/';
 var TOFLIX_TOKEN   = 'TobiCocoToflix2025TokenDeLaV2MeilleurSiteDeStreaminAuMondeEntierQuiEcraseToutSurSonCheminNeDevenezPasJalouxBandeDeNoobs';
@@ -14,15 +15,35 @@ var ZEUS_REFERER   = 'https://' + TOFLIX_DOMAIN + '/';
 var _cachedEndpoint = null;
 
 // ---------------------------------------------------------------
-// Endpoint fixe — toflix.fit
+// Endpoint récupéré depuis domains.json (clé "tf") — fallback toflix.fitit
 // ---------------------------------------------------------------
 function detectToflixEndpoint() {
   if (_cachedEndpoint) return Promise.resolve(_cachedEndpoint);
-  _cachedEndpoint = {
-    api:     'https://api.' + TOFLIX_DOMAIN + '/toflix_api.php',
-    referer: 'https://' + TOFLIX_DOMAIN + '/'
-  };
-  return Promise.resolve(_cachedEndpoint);
+  return fetch(DOMAINS_URL)
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      var tld = data['tf'];
+      if (!tld) throw new Error('Clé "tf" absente du domains.json');
+      TOFLIX_DOMAIN  = 'toflix.' + tld;
+      TOFLIX_API     = 'https://api.' + TOFLIX_DOMAIN + '/toflix_api.php';
+      TOFLIX_REFERER = 'https://' + TOFLIX_DOMAIN + '/';
+      ZEUS_REFERER   = 'https://' + TOFLIX_DOMAIN + '/';
+      _cachedEndpoint = { api: TOFLIX_API, referer: TOFLIX_REFERER };
+      console.log('[ToFlix] Domaine récupéré :', TOFLIX_DOMAIN);
+      return _cachedEndpoint;
+    })
+    .catch(function(err) {
+      console.warn('[ToFlix] domains.json échoué :', err.message, '— fallback toflix.fit');
+      TOFLIX_DOMAIN  = 'toflix.fit';
+      TOFLIX_API     = 'https://api.toflix.fit/toflix_api.php';
+      TOFLIX_REFERER = 'https://toflix.fit/';
+      ZEUS_REFERER   = 'https://toflix.fit/';
+      _cachedEndpoint = { api: TOFLIX_API, referer: TOFLIX_REFERER };
+      return _cachedEndpoint;
+    });
 }
 
 function callApi(apiUrl, referer, body) {
