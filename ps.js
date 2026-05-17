@@ -1,9 +1,11 @@
 // =============================================================
 // Provider Nuvio : Purstream.art (VF/VOSTFR/MULTI français)
-// Version : 3.0.0
+// Version : 3.1.0
 // Stratégie : tmdbId → titre TMDB → recherche purstream → streams
+// - Domaine récupéré depuis domains.json GitHub (iokza/NoAds4Website, clé "ps") en priorité
 // =============================================================
 
+var DOMAINS_URL = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
 var PURSTREAM_API_DEFAULT = 'https://api.purstream.art/api/v1';
 var PURSTREAM_API = PURSTREAM_API_DEFAULT;
 var PURSTREAM_REFERER_DEFAULT = 'https://purstream.art/';
@@ -19,40 +21,57 @@ var PURSTREAM_TELEGRAM = 'https://t.me/s/purstreamm';
 // 2ème choix : Telegram @purstreamm
 // ---------------------------------------------------------------
 function detectPurstreamDomain() {
-  return fetch(PURSTREAM_REDIRECT, {
-    method: 'GET',
-    headers: { 'User-Agent': PURSTREAM_UA }
-  })
-    .then(function(res) { return res.text(); })
-    .then(function(html) {
-      var m = html.match(/https?:\/\/purstream\.[a-z]+/gi);
-      if (!m) throw new Error('Aucun domaine sur purstream.wiki');
-      var domains = m.filter(function(u) {
-        return u.indexOf('purstream.wiki') === -1 && u.indexOf('t.me') === -1;
-      });
-      if (!domains.length) throw new Error('Aucun domaine valide');
-      var base = domains[domains.length - 1].replace(/\/$/, '');
-      console.log('[Purstream] Domaine via purstream.wiki:', base);
+  // 1er choix : domains.json GitHub (clé "ps")
+  return fetch(DOMAINS_URL)
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      var tld = data['ps'];
+      if (!tld) throw new Error('Clé "ps" absente du domains.json');
+      var base = 'https://purstream.' + tld;
+      console.log('[Purstream] Domaine via domains.json:', base);
       return base;
     })
     .catch(function() {
-      return fetch(PURSTREAM_TELEGRAM, {
+      // 2ème choix : purstream.wiki
+      return fetch(PURSTREAM_REDIRECT, {
         method: 'GET',
         headers: { 'User-Agent': PURSTREAM_UA }
       })
         .then(function(res) { return res.text(); })
         .then(function(html) {
           var m = html.match(/https?:\/\/purstream\.[a-z]+/gi);
-          if (!m) return null;
+          if (!m) throw new Error('Aucun domaine sur purstream.wiki');
           var domains = m.filter(function(u) {
-            return u.indexOf('t.me') === -1 && u.indexOf('telegram') === -1;
+            return u.indexOf('purstream.wiki') === -1 && u.indexOf('t.me') === -1;
           });
-          if (!domains.length) return null;
+          if (!domains.length) throw new Error('Aucun domaine valide');
           var base = domains[domains.length - 1].replace(/\/$/, '');
-          console.log('[Purstream] Domaine via Telegram:', base);
+          console.log('[Purstream] Domaine via purstream.wiki:', base);
           return base;
         })
-        .catch(function() { return null; });
+        .catch(function() {
+          // 3ème choix : Telegram
+          return fetch(PURSTREAM_TELEGRAM, {
+            method: 'GET',
+            headers: { 'User-Agent': PURSTREAM_UA }
+          })
+            .then(function(res) { return res.text(); })
+            .then(function(html) {
+              var m = html.match(/https?:\/\/purstream\.[a-z]+/gi);
+              if (!m) return null;
+              var domains = m.filter(function(u) {
+                return u.indexOf('t.me') === -1 && u.indexOf('telegram') === -1;
+              });
+              if (!domains.length) return null;
+              var base = domains[domains.length - 1].replace(/\/$/, '');
+              console.log('[Purstream] Domaine via Telegram:', base);
+              return base;
+            })
+            .catch(function() { return null; });
+        });
     });
 }
 
