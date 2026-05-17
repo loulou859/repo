@@ -10,7 +10,7 @@
 var TMDB_KEY = 'f3d757824f08ea2cff45eb8f47ca3a1e';
 // URL de TON fichier JSON sur GitHub (iokza)
 var DOMAINS_URL = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
-var MOVIX_FALLBACK = 'cash';
+var MOVIX_FALLBACK = 'tax';
 
 var _cachedEndpoint = null;
 
