@@ -1,13 +1,13 @@
 {
-  "name": "tonpseudo",
-  "version": "1.0.0",
+  "name": "kozai's Repo",
+  "version": "2.5.6",
   "scrapers": [
     {
       "id": "purstream",
       "name": "purstream-fr",
       "description": "french",
-      "version": "1.0.2",
-      "author": "tonpseudo",
+      "version": "1.2.5",
+      "author": "kozai",
       "supportedTypes": [
         "movie",
         "tv"
@@ -19,7 +19,7 @@
         "mp4",
         "m3u8"
       ],
-      "logo": "",
+      "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmhPgf1jLUSRalyd927xLStMIWy1W9VpXkZg&s",
       "contentLanguage": [
         "fr"
       ]
@@ -28,8 +28,8 @@
       "id": "movix",
       "name": "movix-fr",
       "description": "french",
-      "version": "1.0.2",
-      "author": "tonpseudo",
+      "version": "1.7.2",
+      "author": "kozai",
       "supportedTypes": [
         "movie",
         "tv"
@@ -41,7 +41,7 @@
         "mp4",
         "m3u8"
       ],
-      "logo": "",
+      "logo": "https://play-lh.googleusercontent.com/Mc4gGVFB0S9OkZpHsTFhwmZ4DZu_JbdbwHGX8Ih1ArlXjA6CsSilggxdIXm-_zfD5DfCNshBGVeZL93qeSuVig=w240-h480-rw",
       "contentLanguage": [
         "fr"
       ]
@@ -50,21 +50,21 @@
       "id": "anime-sama",
       "name": "anime-sama-fr",
       "description": "Anime-sama.to — Anime VF/VOSTFR",
-      "version": "1.0.0",
-      "author": "loulou859",
+      "version": "1.2.1",
+      "author": "kozai",
       "supportedTypes": ["tv"],
       "filename": "anime-sama.js",
       "enabled": true,
       "formats": ["m3u8", "mp4"],
-      "logo": "https://anime-sama.to/favicon.ico",
+      "logo": "https://play-lh.googleusercontent.com/vwM1oofU8Tqt_bzvRkZNSNWcFQofo7KiUpHQe1Y2GKnUDZShNYiBJDJFNUv83VOjoE9DeQs2psTp7CBAaKjGhQ=w240-h480-rw",
       "contentLanguage": ["fr"]
     },
     {
       "id": "nakios",
       "name": "Nakios",
-      "description": "french stream",
+      "description": "Nakios - Site reconnu VF",
       "version": "3.8.2",
-      "author": "loulou859",
+      "author": "kozai",
       "supportedTypes": ["movie", "tv"],
       "filename": "nakios.js",
       "enabled": true,
@@ -75,9 +75,9 @@
     {
       "id": "toflix",
       "name": "ToFlix",
-      "description": "Films & Séries in English and French",
+      "description": "ToFlix - Films & Séries - VF",
       "version": "1.0.0",
-      "author": "wooodyhood",
+      "author": "kozai",
       "supportedTypes": ["movie", "tv"],
       "filename": "toflix.js",
       "enabled": true,
