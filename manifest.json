@@ -84,6 +84,19 @@
       "formats": ["mp4", "m3u8"],
       "logo": "https://i.postimg.cc/yNxJYqkv/toflix.png",
       "contentLanguage": ["fr"]
+    },
+    {
+      "id": "nakastream",
+      "name": "Nakastream",
+      "description": "Nakastream - Site reconnu VF",
+      "version": "1.8.2",
+      "author": "kozai",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "naka.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzROx56hOhlrM92X-gLPoPcO9HhBIhWsXf3g&s",
+      "contentLanguage": ["fr"]
     }
   ]
 }
