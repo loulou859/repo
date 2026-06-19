@@ -125,6 +125,19 @@
       "formats": ["mp4", "m3u8"],
       "logo": "https://cdn4.telesco.pe/file/fk-hyF9neonRpJlslt-BH_8MRIZj1mfX5Kszot68RDQmHcR8pY0-mytoih3LLbs_eJb8uxRkxKLmX1XADfwq18WZlWuWuwgeNNpFcfNe2x6tKnmeym3tex9tWaNgKQehx3-dGjyk_huSSGn4P3QfRvkcYNjFgxVl9_q95YORjpTnKSiHs9p__HqaUQ-o6DlbZoikxArX7_UzYiixYmrG1n0ysCPTyuB4SklFhpmT37GhevnwlgbzNxmjb3CFTuEQbhS0X63eBwlM9QGxOOY9d1WgIKAc3lTPp30SYAUFnOd_qPnevg1h73MhvYlxebzMpwB-IwteOlvHhrrDewQQog.jpg",
       "contentLanguage": ["fr", "MULTI"]
+    },
+    {
+      "id": "webflix",
+      "name": "WebFlix",
+      "description": "WebFlix - Site reconnu VF",
+      "version": "1.3.2",
+      "author": "kozai",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "webflix.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://webflix.lol/assets/Webflix-BIPlJ3qq.png",
+      "contentLanguage": ["fr", "MULTI"]
     }
   ]
 }
