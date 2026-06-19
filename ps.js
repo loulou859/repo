@@ -285,10 +285,11 @@ function normalizeMovieSources(urls) {
     }
 
     results.push({
-      name: 'Purstream',
+      name: 'Purstream - ' + parseQuality(name),
       title: 'Purstream ' + parseQuality(name) + ' | ' + parseLang(name),
       url: url,
       quality: parseQuality(name),
+      lang: parseLang(name),
       format: url.match(/\.mp4/i) ? 'mp4' : 'm3u8',
       headers: {
         'User-Agent': PURSTREAM_UA,
@@ -308,10 +309,11 @@ function normalizeEpisodeSources(sources) {
     if (!url) continue;
 
     results.push({
-      name: 'Purstream',
+      name: 'Purstream - ' + parseQuality(name),
       title: 'Purstream ' + parseQuality(name) + ' | ' + parseLang(name),
       url: url,
       quality: parseQuality(name),
+      lang: parseLang(name),
       format: item.format || 'm3u8',
       headers: {
         'User-Agent': PURSTREAM_UA,
@@ -369,7 +371,7 @@ function getStreams(tmdbId, mediaType, season, episode) {
 // Export
 // ---------------------------------------------------------------
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getStreams };
+  module.exports = { getStreams: getStreams };
 } else {
   global.getStreams = getStreams;
 }
