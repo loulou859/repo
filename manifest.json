@@ -112,6 +112,19 @@
       "formats": ["mp4", "m3u8"],
       "logo": "https://m.media-amazon.com/images/I/21QPOOTIYuL.jpg",
       "contentLanguage": ["fr", "MULTI"]
+    },
+    {
+      "id": "afterdark",
+      "name": "AfterDark",
+      "description": "AfterDark - Site reconnu VF",
+      "version": "1.2.2",
+      "author": "kozai",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "afterdark.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://cdn4.telesco.pe/file/fk-hyF9neonRpJlslt-BH_8MRIZj1mfX5Kszot68RDQmHcR8pY0-mytoih3LLbs_eJb8uxRkxKLmX1XADfwq18WZlWuWuwgeNNpFcfNe2x6tKnmeym3tex9tWaNgKQehx3-dGjyk_huSSGn4P3QfRvkcYNjFgxVl9_q95YORjpTnKSiHs9p__HqaUQ-o6DlbZoikxArX7_UzYiixYmrG1n0ysCPTyuB4SklFhpmT37GhevnwlgbzNxmjb3CFTuEQbhS0X63eBwlM9QGxOOY9d1WgIKAc3lTPp30SYAUFnOd_qPnevg1h73MhvYlxebzMpwB-IwteOlvHhrrDewQQog.jpg",
+      "contentLanguage": ["fr", "MULTI"]
     }
   ]
 }
