@@ -21,7 +21,8 @@
       ],
       "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmhPgf1jLUSRalyd927xLStMIWy1W9VpXkZg&s",
       "contentLanguage": [
-        "fr"
+        "fr",
+        "MULTI"
       ]
     },
     {
@@ -43,7 +44,8 @@
       ],
       "logo": "https://play-lh.googleusercontent.com/Mc4gGVFB0S9OkZpHsTFhwmZ4DZu_JbdbwHGX8Ih1ArlXjA6CsSilggxdIXm-_zfD5DfCNshBGVeZL93qeSuVig=w240-h480-rw",
       "contentLanguage": [
-        "fr"
+        "fr",
+        "MULTI"
       ]
     },
     {
@@ -57,7 +59,7 @@
       "enabled": true,
       "formats": ["m3u8", "mp4"],
       "logo": "https://play-lh.googleusercontent.com/vwM1oofU8Tqt_bzvRkZNSNWcFQofo7KiUpHQe1Y2GKnUDZShNYiBJDJFNUv83VOjoE9DeQs2psTp7CBAaKjGhQ=w240-h480-rw",
-      "contentLanguage": ["fr"]
+      "contentLanguage": ["fr", "MULTI"]
     },
     {
       "id": "nakios",
@@ -70,7 +72,7 @@
       "enabled": true,
       "formats": ["mp4", "m3u8"],
       "logo": "https://i.postimg.cc/nLwY1pJB/nakios.png",
-      "contentLanguage": ["fr"]
+      "contentLanguage": ["fr", "MULTI"]
     },
     {
       "id": "toflix",
@@ -83,7 +85,7 @@
       "enabled": true,
       "formats": ["mp4", "m3u8"],
       "logo": "https://i.postimg.cc/yNxJYqkv/toflix.png",
-      "contentLanguage": ["fr"]
+      "contentLanguage": ["fr", "MULTI"]
     },
     {
       "id": "nakastream",
@@ -96,7 +98,7 @@
       "enabled": true,
       "formats": ["mp4", "m3u8"],
       "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzROx56hOhlrM92X-gLPoPcO9HhBIhWsXf3g&s",
-      "contentLanguage": ["fr"]
+      "contentLanguage": ["fr", "MULTI"]
     }
   ]
 }
