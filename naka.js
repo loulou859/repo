@@ -35,8 +35,8 @@ function detectEndpoint() {
       return res.json();
     })
     .then(function(data) {
-      var tld = data['nks'];
-      if (!tld) throw new Error('Clé "nks" absente du domains.json');
+      var tld = data['naks'];
+      if (!tld) throw new Error('Clé "naks" absente du domains.json');
       NAKASTREAM_DOMAIN = 'nakastream.' + tld;
       console.log('[Nakastream] Domaine récupéré:', NAKASTREAM_DOMAIN);
       _cachedEndpoint = buildEndpoint(NAKASTREAM_DOMAIN);
