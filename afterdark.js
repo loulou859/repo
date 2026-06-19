@@ -271,6 +271,12 @@ function normalizeSources(ndjsonData, tmdbData, mediaType, season, episode, epIn
         continue;
       }
       
+      // Skip qualités inférieures à 720p (sd, 480p, 360p)
+      var rawQuality = String(item.quality || '').toLowerCase();
+      if (rawQuality === 'sd' || rawQuality === '480p' || rawQuality === '360p' || rawQuality === '240p') {
+        continue;
+      }
+      
       var quality = parseQuality(item.quality);
       var langInfo = parseLangInfo(item.language);
       var providerName = item.provider || providerId;
@@ -381,56 +387,3 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   global.getStreams = getStreams;
 }
-
-
-// =============================================================
-// DOCUMENTATION API 4AFTERDARK
-// =============================================================
-// 
-// DOMAINE DYNAMIQUE :
-// - Récupéré depuis domains.json (clé "aftdrk")
-// - Exemple: "aftdrk": "xyz" → 4afterdark.xyz
-// - Fallback: 4afterdark.mom
-// 
-// ENDPOINTS :
-// 
-// 1. Sources :
-//    GET /api/staging-20260420-yuna-hipaa-86nnorn0/sources
-//    
-//    Params:
-//    - tmdbId (required)
-//    - type: "movie" ou "tv"
-//    - imdbId (from TMDB external_ids)
-//    - title (titre FR)
-//    - releaseYear
-//    - originalTitle
-//    - season, episode (pour TV)
-//    
-//    Response: NDJSON - chaque ligne est un provider:
-//    {
-//      "id": "afroditi",
-//      "items": [{
-//        "url": "https://proxy.taekong.space/e?d=...",
-//        "service": "afroditi",
-//        "type": "mp4",        // mp4, hls, embed
-//        "quality": "hd",      // hd, sd, unknown
-//        "language": "vf",
-//        "provider": "Afroditi",
-//        "proxied": true       // déjà résolu via proxy
-//      }]
-//    }
-// 
-// PROVIDERS :
-// - afroditi: MP4 direct, proxied ✅
-// - thais: HLS direct, proxied ✅
-// - hera: Multiple services (vidara, lulustream, vidsonic, etc.)
-// - iris: Multiple services
-// - thalia: sharecloudy
-// - heloise: vidzy
-// 
-// PRIORITÉ :
-// 1. Proxied HLS/MP4 (déjà résolu)
-// 2. Direct HLS/MP4
-// 3. Embeds (skip si non proxied)
-// 
-// =============================================================
