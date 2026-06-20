@@ -264,27 +264,6 @@ function normalizeSource(videoData, meta, mediaType, season, episode, epInfo) {
     }
   });
   
-  // Si proxy disponible, ajouter aussi via proxy
-  if (videoData.proxyPath) {
-    var proxyUrl = STREAMFLIX_BASE + videoData.proxyPath;
-    
-    var proxySpecs = specs.slice(0); // clone
-    proxySpecs.push('🔒 Proxy');
-    
-    results.push({
-      name: 'Streamflix Proxy - ' + quality + ' ' + langInfo.label,
-      title: line1 + '\n' + proxySpecs.join(' | '),
-      url: proxyUrl,
-      quality: quality,
-      lang: langInfo.label,
-      format: format,
-      headers: {
-        'User-Agent': STREAMFLIX_UA,
-        'Referer': STREAMFLIX_BASE + '/'
-      }
-    });
-  }
-  
   return results;
 }
 
