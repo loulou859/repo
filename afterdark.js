@@ -12,7 +12,7 @@
 // =============================================================
 
 var DOMAINS_URL = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
-var AFTERDARK_DOMAIN = '4afterdark.mom'; // fallback
+var AFTERDARK_DOMAIN = '5afterdark.mom'; // fallback
 var AFTERDARK_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 var TMDB_KEY = 'f3d757824f08ea2cff45eb8f47ca3a1e';
 var API_PATH = '/api/staging-20260420-yuna-hipaa-86nnorn0/sources';
@@ -40,7 +40,7 @@ function detectEndpoint() {
     .then(function(data) {
       var tld = data['aftdrk'];
       if (!tld) throw new Error('Clé "aftdrk" absente du domains.json');
-      AFTERDARK_DOMAIN = '4afterdark.' + tld;
+      AFTERDARK_DOMAIN = tld;
       console.log('[4AfterDark] Domaine récupéré:', AFTERDARK_DOMAIN);
       _cachedEndpoint = buildEndpoint(AFTERDARK_DOMAIN);
       return _cachedEndpoint;
