@@ -101,9 +101,17 @@ function getEpisodeInfo(tmdbId, season, episode) {
 // ─── Récupération des sources ────────────────────────────────
 
 function fetchSources(endpoint, tmdbId, mediaType, season, episode) {
-  var url = endpoint.api + '?type=' + (mediaType === 'tv' ? 'tv' : 'movie') + '&tmdb_id=' + tmdbId;
+  var typeParam = 'movie'; // Par défaut pour les films
   
-  if (mediaType === 'tv' && season && episode) {
+  if (mediaType === 'tv') {
+    // Si on a une saison et un épisode, l'API demande "type=episode"
+    // Sinon, pour la série globale, elle demande "type=series"
+    typeParam = (season && episode) ? 'episode' : 'series';
+  }
+
+  var url = endpoint.api + '?type=' + typeParam + '&tmdb_id=' + tmdbId;
+  
+  if (typeParam === 'episode') {
     url += '&season=' + season + '&episode=' + episode;
   }
   
@@ -115,9 +123,8 @@ function fetchSources(endpoint, tmdbId, mediaType, season, episode) {
       return res.json();
     })
     .then(function(data) {
-      console.log('[Webflix] Response: success=' + data.success + ' available=' + data.available);
-      
-      if (!data.success || !data.available || !data.data) {
+      // L'API renvoie success:false si non trouvé, ou directement les données si success:true
+      if (data.success === false || !data.data) {
         return null;
       }
       
