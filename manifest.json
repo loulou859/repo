@@ -136,7 +136,7 @@
       "filename": "webflix.js",
       "enabled": true,
       "formats": ["mp4", "m3u8"],
-      "logo": "https://webflix.lol/assets/Webflix-BIPlJ3qq.png",
+      "logo": "https://webflix.art/assets/Webflix-BIPlJ3qq.png",
       "contentLanguage": ["fr", "MULTI"]
     },
     {
