@@ -1,7 +1,8 @@
 // =============================================================
 // Provider Nuvio : NoxPulse (VF / VOSTFR / MULTI)
-// Version : 1.0.0
+// Version : 1.1.0
 // - Header: NoxPulse - Quality
+// - Format d'URL corrigé pour les séries : /watch/series/{id}/{s}/{e}
 // - Ajout des métadonnées TMDB, année, durée et émojis UI
 // - Domaine dynamique via domains.json (clé "nox")
 // - Fallback: noxpulse.cc
@@ -160,10 +161,12 @@ function getStreams(tmdbId, mediaType, season, episode) {
     var epInfo   = results[1];
     var endpoint = results[2];
 
-    // Construction de l'URL NoxPulse : /watch/movie/{id} ou /watch/tv/{id}?season={s}&episode={e}
-    var url = endpoint.api + '/watch/' + (mediaType === 'tv' ? 'tv' : 'movie') + '/' + tmdbId;
-    if (mediaType === 'tv' && season && episode) {
-      url += '?season=' + season + '&episode=' + episode;
+    // Construction dynamique de l'URL selon le type de média
+    var url = endpoint.api + '/watch/';
+    if (mediaType === 'tv') {
+      url += 'series/' + tmdbId + '/' + season + '/' + episode;
+    } else {
+      url += 'movie/' + tmdbId;
     }
 
     return fetch(url, {
@@ -176,11 +179,11 @@ function getStreams(tmdbId, mediaType, season, episode) {
     .then(function(data) {
       var list = [];
       
-      // On extrait la source principale si elle existe
+      // Extraction de la source principale
       if (data.source) {
         list.push(data.source);
       }
-      // On fusionne avec le tableau "alternates" s'il y en a
+      // Fusion avec le tableau "alternates" si disponible
       if (data.alternates && data.alternates.length > 0) {
         list = list.concat(data.alternates);
       }
