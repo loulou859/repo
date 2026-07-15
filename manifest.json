@@ -151,6 +151,19 @@
       "formats": ["mp4", "m3u8"],
       "logo": "https://play-lh.googleusercontent.com/g5LB6xtddbJchpN9lwrXIiGMIS48z6aVGLU0EjxXVFQUz549wT8TtoAtLPciTXzKGsxi",
       "contentLanguage": ["fr", "MULTI"]
+    },
+    {
+      "id": "noxpulse",
+      "name": "NoxPulse",
+      "description": "NoxPulse",
+      "version": "1.0.0",
+      "author": "kozai",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "noxpulse.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://noxpulse.cc/logo.png",
+      "contentLanguage": ["fr", "MULTI"]
     }
   ]
 }
