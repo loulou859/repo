@@ -5,7 +5,7 @@
 // =============================================================
 
 var DOMAINS_URL    = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
-var TOFLIX_DOMAIN  = 'toflix.fit'; // fallback
+var TOFLIX_DOMAIN  = 'tfx01.lol'; // fallback
 var TOFLIX_API     = 'https://api.' + TOFLIX_DOMAIN + '/toflix_api.php';
 var TOFLIX_REFERER = 'https://' + TOFLIX_DOMAIN + '/';
 var TOFLIX_TOKEN   = 'TobiCocoToflix2025TokenDeLaV2MeilleurSiteDeStreaminAuMondeEntierQuiEcraseToutSurSonCheminNeDevenezPasJalouxBandeDeNoobs';
@@ -27,7 +27,7 @@ function detectToflixEndpoint() {
     .then(function(data) {
       var tld = data['tf'];
       if (!tld) throw new Error('Clé "tf" absente du domains.json');
-      TOFLIX_DOMAIN  = 'toflix.' + tld;
+      TOFLIX_DOMAIN  = tld;
       TOFLIX_API     = 'https://api.' + TOFLIX_DOMAIN + '/toflix_api.php';
       TOFLIX_REFERER = 'https://' + TOFLIX_DOMAIN + '/';
       ZEUS_REFERER   = 'https://' + TOFLIX_DOMAIN + '/';
@@ -37,10 +37,10 @@ function detectToflixEndpoint() {
     })
     .catch(function(err) {
       console.warn('[ToFlix] domains.json échoué :', err.message, '— fallback toflix.fit');
-      TOFLIX_DOMAIN  = 'toflix.fit';
-      TOFLIX_API     = 'https://api.toflix.fit/toflix_api.php';
-      TOFLIX_REFERER = 'https://toflix.fit/';
-      ZEUS_REFERER   = 'https://toflix.fit/';
+      TOFLIX_DOMAIN  = 'tfx01.lol';
+      TOFLIX_API     = 'https://api.tfx01.lol/toflix_api.php';
+      TOFLIX_REFERER = 'https://tfx01.lol/';
+      ZEUS_REFERER   = 'https://tfx01.lol/';
       _cachedEndpoint = { api: TOFLIX_API, referer: TOFLIX_REFERER };
       return _cachedEndpoint;
     });
