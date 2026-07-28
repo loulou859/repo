@@ -4,9 +4,9 @@
   "scrapers": [
     {
       "id": "purstream",
-      "name": "purstream-fr",
+      "name": "purstream",
       "description": "french",
-      "version": "1.2.5",
+      "version": "1.2.6",
       "author": "kozai",
       "supportedTypes": [
         "movie",
