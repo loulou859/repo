@@ -7,11 +7,11 @@
 // - Séries : GET /api/fastflux?type=tv&tmdb_id={tmdbId}&season={s}&episode={e}
 // 
 // Domaine dynamique via domains.json (clé "wbflix")
-// Fallback: webflix.lol
+// Fallback: webflix.surf
 // =============================================================
 
 var DOMAINS_URL = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
-var WEBFLIX_DOMAIN = 'webflix.lol'; // fallback
+var WEBFLIX_DOMAIN = 'webflix.surf'; // fallback
 var WEBFLIX_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 var TMDB_KEY = 'f3d757824f08ea2cff45eb8f47ca3a1e';
 
