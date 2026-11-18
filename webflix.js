@@ -1,23 +1,42 @@
 // =============================================================
-// Provider : Webflix (VF français)
-// Version : 1.0.0
-// 
-// API :
-// - Films : GET /api/fastflux?type=movie&tmdb_id={tmdbId}
-// - Séries : GET /api/fastflux?type=tv&tmdb_id={tmdbId}&season={s}&episode={e}
-// 
-// Domaine dynamique via domains.json (clé "wbflix")
-// Fallback: webflix.surf
+// Provider : Webflix
+// Version : 1.1.0
+//
+// - Conservation de /api/fastflux
+// - Champs language/provider compatibles avec le modèle fourni
+// - Extraction du paramètre url des pages player4k.html
+// - Conservation des liens video_proxy.php
+// - Logs des réponses API activables
+//
+// Non testé contre l'API en direct.
 // =============================================================
 
-var DOMAINS_URL = 'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
-var WEBFLIX_DOMAIN = 'webflix.surf'; // fallback
-var WEBFLIX_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+var DOMAINS_URL =
+  'https://raw.githubusercontent.com/iokza/NoAds4Website/refs/heads/main/domains.json';
+
+var WEBFLIX_DOMAIN = 'webflix.surf';
+var WEBFLIX_FALLBACK_DOMAIN = 'webflix.surf';
+
+var WEBFLIX_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+  'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+  'Chrome/120.0.0.0 Safari/537.36';
+
 var TMDB_KEY = 'f3d757824f08ea2cff45eb8f47ca3a1e';
+
+// Attention : les logs peuvent contenir des liens temporaires.
+var WEBFLIX_DEBUG = true;
 
 var _cachedEndpoint = null;
 
-// ─── Construction de l'endpoint ──────────────────────────────
+function debug(label, value) {
+  if (!WEBFLIX_DEBUG) return;
+
+  console.log(
+    '[Webflix] ' + label + '\n' +
+    JSON.stringify(value, null, 2)
+  );
+}
 
 function buildEndpoint(domain) {
   return {
@@ -26,31 +45,6 @@ function buildEndpoint(domain) {
     referer: 'https://' + domain + '/'
   };
 }
-
-function detectEndpoint() {
-  if (_cachedEndpoint) return Promise.resolve(_cachedEndpoint);
-  
-  return fetch(DOMAINS_URL)
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function(data) {
-      var tld = data['wbflix'];
-      if (!tld) throw new Error('Clé "wbflix" absente du domains.json');
-      WEBFLIX_DOMAIN = 'webflix.' + tld;
-      console.log('[Webflix] Domaine récupéré:', WEBFLIX_DOMAIN);
-      _cachedEndpoint = buildEndpoint(WEBFLIX_DOMAIN);
-      return _cachedEndpoint;
-    })
-    .catch(function(err) {
-      console.warn('[Webflix] domains.json échoué:', err.message, '— fallback webflix.lol');
-      _cachedEndpoint = buildEndpoint('webflix.lol');
-      return _cachedEndpoint;
-    });
-}
-
-// ─── Headers ─────────────────────────────────────────────────
 
 function getHeaders(endpoint) {
   return {
@@ -61,195 +55,417 @@ function getHeaders(endpoint) {
   };
 }
 
-// ─── TMDB Helpers ────────────────────────────────────────────
+function fetchJson(url, options, label) {
+  return fetch(url, options || {})
+    .then(function(res) {
+      if (!res.ok) {
+        throw new Error((label || 'Requête') + ' HTTP ' + res.status);
+      }
 
-function getTmdbMetadata(tmdbId, type) {
-  var url = 'https://api.themoviedb.org/3/' + (type === 'tv' ? 'tv' : 'movie') + '/' + tmdbId +
-            '?api_key=' + TMDB_KEY + '&language=fr-FR';
-  
-  return fetch(url)
-    .then(function(res) { return res.json(); })
+      return res.json();
+    })
     .then(function(data) {
+      if (label) debug(label, data);
+      return data;
+    });
+}
+
+// ─── Domaine dynamique ───────────────────────────────────────
+
+function detectEndpoint() {
+  if (_cachedEndpoint) return Promise.resolve(_cachedEndpoint);
+
+  return fetchJson(DOMAINS_URL, {}, 'Domaines')
+    .then(function(data) {
+      var value = data && data.wbflix;
+
+      if (typeof value !== 'string' || !value.trim()) {
+        throw new Error('Clé wbflix absente ou invalide');
+      }
+
+      value = value.trim()
+        .replace(/^https?:\/\//i, '')
+        .split('/')[0];
+
+      // Accepte "surf" ou "webflix.surf".
+      WEBFLIX_DOMAIN = /^webflix\./i.test(value)
+        ? value
+        : 'webflix.' + value;
+
+      _cachedEndpoint = buildEndpoint(WEBFLIX_DOMAIN);
+      return _cachedEndpoint;
+    })
+    .catch(function(err) {
+      console.warn(
+        '[Webflix] Domaine dynamique indisponible : ' +
+        (err.message || err)
+      );
+
+      WEBFLIX_DOMAIN = WEBFLIX_FALLBACK_DOMAIN;
+      _cachedEndpoint = buildEndpoint(WEBFLIX_DOMAIN);
+
+      return _cachedEndpoint;
+    });
+}
+
+// ─── Métadonnées TMDB ────────────────────────────────────────
+
+function getTmdbMetadata(tmdbId, mediaType) {
+  var kind = mediaType === 'tv' ? 'tv' : 'movie';
+  var url =
+    'https://api.themoviedb.org/3/' + kind + '/' +
+    encodeURIComponent(tmdbId) +
+    '?api_key=' + encodeURIComponent(TMDB_KEY) +
+    '&language=fr-FR';
+
+  return fetchJson(url)
+    .then(function(data) {
+      var runtimes = data.episode_run_time;
+      var duration = data.runtime ||
+        (Array.isArray(runtimes) ? runtimes[0] : null);
+
       return {
         name: data.title || data.name || 'Webflix',
-        year: (data.release_date || data.first_air_date || '').split('-')[0],
-        duration: data.runtime ? data.runtime + ' min' : ''
+        year: String(
+          data.release_date || data.first_air_date || ''
+        ).split('-')[0],
+        duration: duration ? String(duration) + ' min' : ''
       };
     })
     .catch(function() {
-      return { name: 'Webflix', year: '', duration: '' };
+      return {
+        name: 'Webflix',
+        year: '',
+        duration: ''
+      };
     });
 }
 
 function getEpisodeInfo(tmdbId, season, episode) {
-  if (!tmdbId || !season || !episode) return Promise.resolve(null);
-  
-  var url = 'https://api.themoviedb.org/3/tv/' + tmdbId + '/season/' + season + '/episode/' + episode +
-            '?api_key=' + TMDB_KEY + '&language=fr-FR';
-  
-  return fetch(url)
-    .then(function(res) { return res.json(); })
+  var url =
+    'https://api.themoviedb.org/3/tv/' +
+    encodeURIComponent(tmdbId) +
+    '/season/' + season +
+    '/episode/' + episode +
+    '?api_key=' + encodeURIComponent(TMDB_KEY) +
+    '&language=fr-FR';
+
+  return fetchJson(url)
     .then(function(data) {
       return {
-        name: data.name || null,
-        duration: data.runtime ? data.runtime + ' min' : null
+        name: data.name || '',
+        duration: data.runtime ? String(data.runtime) + ' min' : ''
       };
     })
-    .catch(function() { return null; });
-}
-
-// ─── Récupération des sources ────────────────────────────────
-
-function fetchSources(endpoint, tmdbId, mediaType, season, episode) {
-  var typeParam = 'movie'; // Par défaut pour les films
-  
-  if (mediaType === 'tv') {
-    // Si on a une saison et un épisode, l'API demande "type=episode"
-    // Sinon, pour la série globale, elle demande "type=series"
-    typeParam = (season && episode) ? 'episode' : 'series';
-  }
-
-  var url = endpoint.api + '?type=' + typeParam + '&tmdb_id=' + tmdbId;
-  
-  if (typeParam === 'episode') {
-    url += '&season=' + season + '&episode=' + episode;
-  }
-  
-  console.log('[Webflix] Fetching:', url);
-  
-  return fetch(url, { method: 'GET', headers: getHeaders(endpoint) })
-    .then(function(res) {
-      if (!res.ok) throw new Error('API HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function(data) {
-      // L'API renvoie success:false si non trouvé, ou directement les données si success:true
-      if (data.success === false || !data.data) {
-        return null;
-      }
-      
-      return data.data;
+    .catch(function() {
+      return null;
     });
 }
 
-// ─── Helpers de formatage ────────────────────────────────────
+// ─── API Webflix ─────────────────────────────────────────────
 
-function parseLangInfo(lang) {
-  if (!lang) return { icon: '🌍', label: 'MULTI' };
-  var l = String(lang).toUpperCase();
-  if (l.indexOf('VOSTFR') !== -1) return { icon: '🔡', label: 'VOSTFR' };
-  if (l.indexOf('VF') !== -1 || l === 'FR' || l === 'FRENCH') return { icon: '🇫🇷', label: 'VF' };
-  if (l.indexOf('MULTI') !== -1) return { icon: '🌍', label: 'MULTI' };
-  if (l.indexOf('VO') !== -1 || l === 'EN') return { icon: '🇬🇧', label: 'VO' };
-  return { icon: '🌍', label: l || 'MULTI' };
-}
+function fetchSources(endpoint, tmdbId, mediaType, season, episode) {
+  // Conserve le fonctionnement de ton code :
+  // movie pour les films, episode pour les épisodes.
+  var type = mediaType === 'tv' ? 'episode' : 'movie';
 
-function parseQuality(q) {
-  if (!q || q === 'Unknown') return 'HD';
-  var s = String(q).toUpperCase();
-  if (s.indexOf('4K') !== -1 || s.indexOf('2160') !== -1) return '4K';
-  if (s.indexOf('1080') !== -1) return '1080p';
-  if (s.indexOf('720') !== -1) return '720p';
-  if (s.indexOf('480') !== -1) return '480p';
-  return s || 'HD';
-}
+  var url =
+    endpoint.api +
+    '?type=' + type +
+    '&tmdb_id=' + encodeURIComponent(tmdbId);
 
-function detectFormat(url, type) {
-  if (type) {
-    var t = type.toLowerCase();
-    if (t === 'mp4') return 'MP4';
-    if (t === 'hls' || t === 'm3u8') return 'M3U8';
+  if (mediaType === 'tv') {
+    url += '&season=' + season + '&episode=' + episode;
   }
-  if (!url) return 'MP4';
-  if (url.indexOf('.m3u8') !== -1) return 'M3U8';
-  if (url.indexOf('.mp4') !== -1) return 'MP4';
-  return 'MP4';
+
+  console.log('[Webflix] Requête : ' + url);
+
+  return fetchJson(
+    url,
+    { method: 'GET', headers: getHeaders(endpoint) },
+    'Réponse API brute'
+  ).then(function(data) {
+    if (!data || data.success === false || data.available === false) {
+      return [];
+    }
+
+    var payload = data.data;
+
+    if (!payload) return [];
+
+    // Réponse d'origine : data = un objet source.
+    // Supporte aussi un tableau si l'API en renvoie un.
+    if (Array.isArray(payload)) return payload;
+
+    if (Array.isArray(payload.sources)) {
+      return payload.sources;
+    }
+
+    return [payload];
+  });
 }
 
-// ─── Normalisation avec UI formatée ──────────────────────────
+// ─── Résolution des adresses ─────────────────────────────────
 
-function normalizeSource(source, meta, mediaType, season, episode, epInfo) {
-  var streamUrl = source.url;
+function getQueryParam(url, key) {
+  var queryIndex = url.indexOf('?');
+  if (queryIndex === -1) return null;
+
+  var parts = url.slice(queryIndex + 1).split('#')[0].split('&');
+
+  for (var i = 0; i < parts.length; i++) {
+    var equalIndex = parts[i].indexOf('=');
+    if (equalIndex === -1) continue;
+
+    var paramName = parts[i].slice(0, equalIndex);
+
+    if (paramName !== key) continue;
+
+    try {
+      return decodeURIComponent(
+        parts[i].slice(equalIndex + 1).replace(/\+/g, ' ')
+      );
+    } catch (err) {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+function resolveStreamUrl(rawUrl, endpoint) {
+  if (typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
+
+  var url = rawUrl.trim().replace(/&amp;/g, '&');
+
+  if (url.indexOf('//') === 0) {
+    url = 'https:' + url;
+  } else if (url.charAt(0) === '/') {
+    url = endpoint.base + url;
+  }
+
+  if (!/^https?:\/\//i.test(url)) return null;
+
+  // Une page de lecteur n'est pas un flux :
+  // on extrait l'adresse déjà présente dans son paramètre url.
+  if (/\/player4k\.html(?:[?#]|$)/i.test(url)) {
+    var embedded = getQueryParam(url, 'url');
+
+    if (!embedded || embedded === url) return null;
+
+    return resolveStreamUrl(embedded, endpoint);
+  }
+
+  // Ce chemin opaque n'est pas confirmé comme flux direct.
+  if (/\/api\/v\/z\//i.test(url)) {
+    console.warn(
+      '[Webflix] Chemin embed non résolu, source ignorée : ' + url
+    );
+    return null;
+  }
+
+  // Conserve notamment video_proxy.php et son mécanisme
+  // de redirection. Aucun jeton ff n'est généré ici.
+  return url;
+}
+
+// ─── Formatage ───────────────────────────────────────────────
+
+function parseLanguage(value) {
+  var text = String(value || 'VF').toUpperCase();
+
+  if (text.indexOf('MULTI') !== -1) return 'MULTI';
+  if (text.indexOf('VOST') !== -1) return 'VOSTFR';
+
+  if (
+    text.indexOf('VF') !== -1 ||
+    text === 'FR' ||
+    text === 'FRENCH'
+  ) {
+    return 'VF';
+  }
+
+  if (text === 'EN' || text === 'ENGLISH' || text === 'VO') {
+    return 'VO';
+  }
+
+  return text;
+}
+
+function parseQuality(value) {
+  var text = String(value || '').toUpperCase();
+
+  if (!text || text === 'UNKNOWN') return 'HD';
+  if (/4K|2160/.test(text)) return '4K';
+  if (/1080|FHD/.test(text)) return '1080p';
+  if (/720/.test(text)) return '720p';
+  if (/480/.test(text)) return '480p';
+
+  return text;
+}
+
+function detectFormat(url, value) {
+  var text = String(value || '').toLowerCase();
+
+  if (text === 'hls' || text === 'm3u8' || /\.m3u8(?:[?#]|$)/i.test(url)) {
+    return 'M3U8';
+  }
+
+  if (text === 'mp4' || /\.mp4(?:[?#&]|$)/i.test(url)) {
+    return 'MP4';
+  }
+
+  return '';
+}
+
+function normalizeSource(
+  source,
+  endpoint,
+  meta,
+  mediaType,
+  season,
+  episode,
+  epInfo
+) {
+  if (!source || typeof source !== 'object') return null;
+
+  var streamUrl = resolveStreamUrl(source.url, endpoint);
   if (!streamUrl) return null;
-  
-  // Utiliser le titre depuis l'API Webflix si dispo, sinon TMDB
-  var title = source.title || meta.name;
-  var year = source.year || meta.year;
+
+  var title = String(source.title || meta.name);
+  var year = String(source.year || meta.year || '');
   var quality = parseQuality(source.quality);
-  var langInfo = parseLangInfo(source.language);
-  var format = detectFormat(streamUrl, source.type);
-  
-  // ─── Construction du titre formaté ───────────────────────
-  var line1 = '🎬 ';
-  if (mediaType === 'tv' && season && episode) {
-    var epTitle = epInfo && epInfo.name ? ' - ' + epInfo.name : '';
-    line1 += 'S' + season + ' E' + episode + epTitle + ' | ' + title;
+  var language = parseLanguage(source.language || source.lang);
+  var format = detectFormat(
+    streamUrl,
+    source.format || source.type
+  );
+
+  var line1;
+
+  if (mediaType === 'tv') {
+    line1 =
+      'S' + season + ' E' + episode +
+      (epInfo && epInfo.name ? ' - ' + epInfo.name : '') +
+      ' | ' + title;
   } else {
-    line1 += title + (year ? ' (' + year + ')' : '');
+    line1 = title + (year ? ' (' + year + ')' : '');
   }
-  
-  var specs = [
-    '📺 ' + quality,
-    langInfo.icon + ' ' + langInfo.label,
-    '🎞️ ' + format
-  ];
-  
-  // Durée
-  var duration = epInfo && epInfo.duration ? epInfo.duration : meta.duration;
-  if (duration) specs.push('⏱️ ' + duration);
-  
-  // Taille du fichier
-  if (source.size) specs.push('💾 ' + source.size);
-  
-  return {
-    name: 'Webflix - ' + quality + ' ' + langInfo.label,
+
+  var specs = [quality, language];
+
+  if (format) specs.push(format);
+
+  var duration = epInfo && epInfo.duration
+    ? epInfo.duration
+    : meta.duration;
+
+  if (duration) specs.push(duration);
+
+  var size = source.size == null ? '' : String(source.size);
+  if (size) specs.push(size);
+
+  var headers = {
+    'User-Agent': WEBFLIX_UA,
+    'Referer': endpoint.referer
+  };
+
+  // Conserve seulement des valeurs string pour Map<String, String>.
+  if (source.headers && typeof source.headers === 'object') {
+    Object.keys(source.headers).forEach(function(key) {
+      if (typeof source.headers[key] === 'string') {
+        headers[key] = source.headers[key];
+      }
+    });
+  }
+
+  var result = {
+    name: 'Webflix - ' + quality + ' ' + language,
     title: line1 + '\n' + specs.join(' | '),
     url: streamUrl,
     quality: quality,
-    lang: langInfo.label,
-    format: format.toLowerCase(),
-    headers: {
-      'User-Agent': WEBFLIX_UA,
-      'Referer': 'https://' + WEBFLIX_DOMAIN + '/'
-    }
+    language: language,
+    provider: 'Webflix',
+    headers: headers
   };
+
+  if (size) result.size = size;
+
+  return result;
 }
 
-// ─── Point d'entrée principal ────────────────────────────────
+// ─── Point d'entrée ──────────────────────────────────────────
 
 function getStreams(tmdbId, mediaType, season, episode) {
-  console.log('[Webflix] START tmdbId=' + tmdbId + ' type=' + mediaType + ' S' + season + 'E' + episode);
-  
-  var endpoint;
-  var meta;
-  var epInfo;
-  
+  mediaType = mediaType === 'series' ? 'tv' : mediaType;
+
+  if (!tmdbId || (mediaType !== 'movie' && mediaType !== 'tv')) {
+    console.error('[Webflix] Identifiant ou type de média invalide');
+    return Promise.resolve([]);
+  }
+
+  if (mediaType === 'tv') {
+    season = Number(season);
+    episode = Number(episode);
+
+    if (
+      !isFinite(season) || season < 0 || Math.floor(season) !== season ||
+      !isFinite(episode) || episode < 1 || Math.floor(episode) !== episode
+    ) {
+      console.error('[Webflix] Saison ou épisode invalide');
+      return Promise.resolve([]);
+    }
+  }
+
   return Promise.all([
     detectEndpoint(),
     getTmdbMetadata(tmdbId, mediaType),
-    mediaType === 'tv' ? getEpisodeInfo(tmdbId, season, episode) : Promise.resolve(null)
+    mediaType === 'tv'
+      ? getEpisodeInfo(tmdbId, season, episode)
+      : Promise.resolve(null)
   ])
-    .then(function(results) {
-      endpoint = results[0];
-      meta = results[1];
-      epInfo = results[2];
-      
-      return fetchSources(endpoint, tmdbId, mediaType, season, episode);
-    })
-    .then(function(source) {
-      if (!source) {
-        console.log('[Webflix] Contenu non disponible');
-        return [];
-      }
-      
-      var result = normalizeSource(source, meta, mediaType, season, episode, epInfo);
-      if (!result) return [];
-      
-      console.log('[Webflix] 1 source trouvée:', result.quality, result.lang);
-      return [result];
+    .then(function(context) {
+      var endpoint = context[0];
+      var meta = context[1];
+      var epInfo = context[2];
+
+      return fetchSources(
+        endpoint,
+        tmdbId,
+        mediaType,
+        season,
+        episode
+      ).then(function(sources) {
+        var results = [];
+
+        sources.forEach(function(source) {
+          try {
+            var result = normalizeSource(
+              source,
+              endpoint,
+              meta,
+              mediaType,
+              season,
+              episode,
+              epInfo
+            );
+
+            if (result) results.push(result);
+          } catch (err) {
+            console.warn(
+              '[Webflix] Source ignorée : ' + (err.message || err)
+            );
+          }
+        });
+
+        debug('Résultats normalisés', results);
+        console.log('[Webflix] Sources trouvées : ' + results.length);
+
+        return results;
+      });
     })
     .catch(function(err) {
-      console.error('[Webflix] Erreur:', err.message || err);
+      console.error('[Webflix] Erreur : ' + (err.message || err));
       return [];
     });
 }
@@ -258,43 +474,8 @@ function getStreams(tmdbId, mediaType, season, episode) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { getStreams: getStreams };
-} else {
+} else if (typeof globalThis !== 'undefined') {
+  globalThis.getStreams = getStreams;
+} else if (typeof global !== 'undefined') {
   global.getStreams = getStreams;
 }
-
-
-// =============================================================
-// DOCUMENTATION API WEBFLIX
-// =============================================================
-// 
-// DOMAINE DYNAMIQUE :
-// - Récupéré depuis domains.json (clé "wbflix")
-// - Exemple: "wbflix": "lol" → webflix.lol
-// - Fallback: webflix.lol
-// 
-// ENDPOINTS :
-// 
-// 1. Sources film :
-//    GET /api/fastflux?type=movie&tmdb_id={tmdbId}
-// 
-// 2. Sources série :
-//    GET /api/fastflux?type=tv&tmdb_id={tmdbId}&season={s}&episode={e}
-// 
-// RESPONSE :
-// {
-//   "success": true,
-//   "available": true,
-//   "data": {
-//     "tmdb_id": 1477317,
-//     "title": "À contre-sens 2 : Londres",
-//     "year": 2026,
-//     "url": "https://cdn.fastflux.xyz/movies/Your-Fault-London-2026.mp4",
-//     "type": "mp4",
-//     "quality": "Unknown",
-//     "language": "VF",
-//     "size": "1.11 GB",
-//     "added_at": "2026-06-17 10:44:19"
-//   }
-// }
-// 
-// =============================================================
